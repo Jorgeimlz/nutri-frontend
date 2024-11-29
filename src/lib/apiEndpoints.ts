@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://recomendacionesnutri.onrender.com';
+const API_BASE_URL = 'https://recomendacionesnutri.onrender.com/api';
 
 export const ENDPOINTS = {
   AUTH: {
