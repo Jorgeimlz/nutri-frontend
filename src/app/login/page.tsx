@@ -1,23 +1,30 @@
 'use client';
 
-import { useForm } from 'react-hook-form';
+import { useForm, SubmitHandler } from 'react-hook-form';
 import { login } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+// Definimos el tipo para los datos del formulario de inicio de sesión
+interface LoginData {
+  email: string;
+  password: string;
+}
+
 export default function LoginPage() {
   const router = useRouter();
-  const [error, setError] = useState('');
-  const { register, handleSubmit } = useForm();
+  const [error, setError] = useState<string>(''); // Estado para manejar errores
+  const { register, handleSubmit } = useForm<LoginData>(); // Tipar el formulario con LoginData
 
-  const onSubmit = async (data: any) => {
+  // Manejar el envío del formulario
+  const onSubmit: SubmitHandler<LoginData> = async (data) => {
     try {
-      setError('');
-      const response = await login(data);
+      setError(''); // Reiniciar errores
+      const response = await login(data); // Llamar a la función de login
       localStorage.setItem('token', response.access); // Guardar el token en localStorage
-      router.push('/landing'); // Redirigir a la landing page
-    } catch (e: any) {
-      setError('Error al iniciar sesión.');
+      router.push('/landing'); // Redirigir a la página de bienvenida
+    } catch {
+      setError('Error al iniciar sesión. Verifica tus credenciales.'); // Manejar errores de inicio de sesión
     }
   };
 
@@ -27,14 +34,29 @@ export default function LoginPage() {
         <h1 className="text-2xl font-bold text-gray-800 mb-6">Iniciar Sesión</h1>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="mb-4">
-            <label htmlFor="email">Correo Electrónico</label>
-            <input {...register('email')} className="w-full border p-2 rounded" />
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700">Correo Electrónico</label>
+            <input
+              {...register('email', { required: 'El correo es obligatorio' })}
+              type="email"
+              className="w-full border p-2 rounded"
+              placeholder="ejemplo@correo.com"
+            />
           </div>
           <div className="mb-4">
-            <label htmlFor="password">Contraseña</label>
-            <input {...register('password')} type="password" className="w-full border p-2 rounded" />
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700">Contraseña</label>
+            <input
+              {...register('password', { required: 'La contraseña es obligatoria' })}
+              type="password"
+              className="w-full border p-2 rounded"
+              placeholder="********"
+            />
           </div>
-          <button className="w-full bg-indigo-500 text-white py-2 rounded">Iniciar Sesión</button>
+          <button
+            type="submit"
+            className="w-full bg-indigo-500 text-white py-2 rounded hover:bg-indigo-600"
+          >
+            Iniciar Sesión
+          </button>
         </form>
         {error && <p className="text-red-500 mt-4">{error}</p>}
       </div>

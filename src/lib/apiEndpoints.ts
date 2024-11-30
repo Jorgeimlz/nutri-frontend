@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://recomendacionesnutri.onrender.com/api';
+const API_BASE_URL = 'http://127.0.0.1:8000/api';
 
 export const ENDPOINTS = {
   AUTH: {
@@ -15,5 +15,7 @@ export const ENDPOINTS = {
     NUTRICIONALES: `${API_BASE_URL}/recetas/recomendaciones-nutricionales/`,
     RECOMENDACIONES: `${API_BASE_URL}/recetas/recomendaciones/`,
     DETAILS: (id: number) => `${API_BASE_URL}/recetas/${id}/`,
+    GUARDADAS: `${API_BASE_URL}/recetas-guardadas/`,
+    MAS_GUARDADAS: `${API_BASE_URL}/recetas-guardadas/mas-guardadas/`, // Ruta para obtener las recetas más guardadas
   },
 };

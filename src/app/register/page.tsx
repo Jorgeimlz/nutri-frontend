@@ -1,6 +1,6 @@
 'use client';
 
-import { useForm } from 'react-hook-form';
+import { useForm, SubmitHandler } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useState } from 'react';
@@ -16,9 +16,22 @@ const schema = yup.object().shape({
   apellidos: yup.string().required('Apellido es requerido'),
   altura: yup.number().positive('Altura inválida').required('Altura es requerida'),
   peso: yup.number().positive('Peso inválido').required('Peso es requerido'),
-  preferencias_ids: yup.array().of(yup.number()),
+  preferencias_ids: yup.array().of(yup.number().nullable()).optional(), // Cambiado a `nullable` para permitir valores opcionales
 });
 
+// Interfaz para los datos del formulario
+interface RegisterFormData {
+  username: string;
+  email: string;
+  password: string;
+  nombres: string;
+  apellidos: string;
+  altura: number;
+  peso: number;
+  preferencias_ids?: (number | null)[]; // Cambiado para aceptar valores opcionales
+}
+
+// Opciones de preferencias
 const preferencias = [
   { id: 1, nombre: 'Vegetariano' },
   { id: 2, nombre: 'Vegano' },
@@ -34,23 +47,26 @@ const preferencias = [
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string>('');
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors },
-  } = useForm({
-    resolver: yupResolver(schema),
+  } = useForm<RegisterFormData>({
+    resolver: yupResolver(schema) as any,
   });
 
-  const onSubmit = async (data: any) => {
+  const onSubmit: SubmitHandler<RegisterFormData> = async (data) => {
     try {
       setError('');
       await registerUser(data);
       router.push('/login');
-    } catch (e: any) {
-      setError(e.message || 'Error al registrarse');
+    } catch (e) {
+      if (e instanceof Error) {
+        setError(e.message || 'Error al registrarse');
+      } else {
+        setError('Ocurrió un error desconocido.');
+      }
     }
   };
 
@@ -124,7 +140,7 @@ export default function RegisterPage() {
 
           {/* Preferencias Alimentarias */}
           <div className="col-span-2">
-            <label htmlFor="preferencias" className="block text-sm font-medium">
+            <label htmlFor="preferencias_ids" className="block text-sm font-medium">
               Preferencias Alimentarias
             </label>
             <select

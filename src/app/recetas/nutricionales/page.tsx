@@ -3,11 +3,39 @@
 import { useEffect, useState } from 'react';
 import { ENDPOINTS } from '@/lib/apiEndpoints';
 
+// Tipos para los datos de macronutrientes
+interface Macronutrientes {
+  minimos: {
+    calorias: number;
+    proteinas: number;
+    carbohidratos: number;
+    grasas: number;
+  };
+  maximos: {
+    calorias: number;
+    proteinas: number;
+    carbohidratos: number;
+    grasas: number;
+  };
+}
+
+// Tipo para las recetas
+interface Receta {
+  receta: string;
+  valores_nutricionales: {
+    calorias: number;
+    proteinas: number;
+    carbohidratos: number;
+    grasas: number;
+  };
+  es_apta_por_macronutrientes: boolean;
+  razones_no_apta: string[];
+}
+
 export default function RecetasNutricionalesPage() {
-  const [recetas, setRecetas] = useState<any[]>([]);
-  const [macronutrientes, setMacronutrientes] = useState<any>(null);
-  const [error, setError] = useState('');
-  
+  const [recetas, setRecetas] = useState<Receta[]>([]);
+  const [macronutrientes, setMacronutrientes] = useState<Macronutrientes | null>(null);
+  const [error, setError] = useState<string>('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -25,30 +53,27 @@ export default function RecetasNutricionalesPage() {
           throw new Error('Error al obtener las necesidades de macronutrientes');
         }
 
-        const macronutrientesData = await macronutrientesResponse.json();
+        const macronutrientesData: Macronutrientes = await macronutrientesResponse.json();
         setMacronutrientes(macronutrientesData);
 
         // Fetch de recetas nutricionales
-        const recetasResponse = await fetch(
-          ENDPOINTS.RECETAS.NUTRICIONALES,
-          {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-          }
-        );
+        const recetasResponse = await fetch(ENDPOINTS.RECETAS.NUTRICIONALES, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
 
         if (!recetasResponse.ok) {
           throw new Error('Error al obtener las recetas');
         }
 
-        const recetasData = await recetasResponse.json();
+        const recetasData: Receta[] = await recetasResponse.json();
         setRecetas(recetasData);
-      } catch (e) {
-        if (e instanceof Error) {
-          setError(e.message);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          setError(error.message);
         } else {
           setError('Ocurrió un error desconocido.');
         }
@@ -123,7 +148,7 @@ export default function RecetasNutricionalesPage() {
               <div className="text-red-500 font-bold mt-2">
                 <p>Esta receta no se ajusta a tus necesidades nutricionales por las siguientes razones:</p>
                 <ul className="list-disc ml-6">
-                  {receta.razones_no_apta.map((razon: string, index: number) => (
+                  {receta.razones_no_apta.map((razon, index) => (
                     <li key={index}>{razon}</li>
                   ))}
                 </ul>
